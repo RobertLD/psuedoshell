@@ -11,16 +11,16 @@
 #define DEBUGMODE 1
 
 enum commandType {
-    movetodir,
-    whereami,
-    history,
-    byebye,
-    replay,
-    start,
-    background,
-    dalek,
-    repeat,
-    dalekall
+    typemovetodir,
+    typewhereami,
+    typehistory,
+    typebyebye,
+    typereplay,
+    typestart,
+    typebackground,
+    typedalek,
+    typerepeat,
+    typedalekall
 
 };
 
@@ -48,6 +48,7 @@ Directory *initDir();
 char *getCommands(); // Grab commands from standard output and parse them
 Command *parseCommand(); // Grab line, tokenize
 void executeCommand(Command *pcommand);
+void movetodir();
 
 // Global access variables
 Directory *dirinfo; //init current directory
@@ -115,6 +116,25 @@ Command *parseCommand(char* command){
     return pcommand;
 
 }
+
+// Executes the command selected by the user
+void executeCommand(Command *pcommand){
+    enum commandType type = setType(pcommand->command);
+
+    switch (type) {
+        case typemovetodir:
+        case typewhereami:
+        case typehistory:
+        case typebyebye:
+        case typereplay:
+        case typestart:
+        case typebackground:
+        case typedalek:
+        case typerepeat:
+        case typedalekall:
+    }
+}
+
 int main(int argc, char **argv){
 
     // Initilize shell program
