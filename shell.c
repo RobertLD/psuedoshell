@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <string.h>
 
 //constant variables
 #define BUFFERSIZE 2000
 #define MAXTOKENS 100
+#define MAXHISTORYSIZE 10000
 
 //Shell Flags
 #define DEBUGMODE 1
@@ -45,6 +48,7 @@ typedef struct History{
 
 //function prototypes
 Directory *initDir();
+void initHistory();
 char *getCommands(); // Grab commands from standard output and parse them
 Command *parseCommand(); // Grab line, tokenize
 void executeCommand(Command *pcommand);
@@ -59,10 +63,11 @@ void background(Command *pcommand);
 void dalek(Command *pcommand);
 void repeat(Command *pcommand);
 void dalekall();
+void addtohistory(Command *pcommand);
 
 // Global access variables
 Directory *dirinfo; //init current directory
-
+History *commandHistory;
     
 
 
@@ -74,6 +79,14 @@ Directory *initDir(){
     getcwd(retval->currentDirectory, BUFFERSIZE);
 
     return retval;
+}
+
+void initHistory(){
+    commandHistory = malloc(sizeof(commandHistory));
+    commandHistory->size = 0;
+    commandHistory->commands = malloc(sizeof(Command) * MAXHISTORYSIZE);
+    return;
+
 }
 
 char *getCommands(){
@@ -224,15 +237,42 @@ void whereami(){
     return;
 }
 void history(Command *pcommand){
+    for(int i = 0; i < commandHistory->size; i++){
+        printf("[%d]: %s\n", i, commandHistory->commands[i].command);
+    }
     return;
 }
 void byebye(){
+    exit(0);
     return;
 }
 void replay(Command *pcommand){
+    int commandNumber = (int) strtol(pcommand->parameters[0], (char **)NULL, 1000);
+    executeCommand(&commandHistory->commands[commandNumber]);
     return;
 }
 void start(Command *pcommand){
+    char program[BUFFERSIZE];
+    strcpy(program, pcommand->parameters[0]);
+
+    //pids
+    pid_t parent = getpid();
+    pid_t pid = fork();
+
+    //construct command string
+    char *cmdString[] = {program, NULL};
+    if(pid == -1) {
+        printf("Error starting process.\n");
+    } else if(pid > 0){
+        int status;
+        waitpid(pid, &status, 0);
+    } else {
+        if(DEBUGMODE){
+            printf("Starting... %s\n", program);
+        }
+        execv(program, cmdString);
+    }
+    
     return;
 }
 void background(Command *pcommand){
@@ -247,7 +287,12 @@ void repeat(Command *pcommand){
 void dalekall(){
     return;
 }
+void addtohistory(Command *pcommand){
+    commandHistory->commands[commandHistory->size] = *pcommand;
+    commandHistory->size++;
+    return;
 
+}
 
 
 
@@ -256,7 +301,7 @@ int main(int argc, char **argv){
 
     // Initilize shell program
     dirinfo = initDir();
-
+    initHistory();
     //Variables
     char *command;
     
@@ -268,7 +313,7 @@ int main(int argc, char **argv){
         Command *pcommand = malloc(sizeof(command));
         command = getCommands();
         pcommand = parseCommand(command);
-
+        addtohistory(pcommand);
         executeCommand(pcommand);
 
         //DEBUG: Print the contents of pcommand
