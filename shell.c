@@ -289,7 +289,12 @@ void history(Command *pcommand){
     else{
         int size = commandHistory->size;
         for(int i = size - 1; i >= 0; i--){
-            printf("[%d]: %s\n", size - i - 1, commandHistory->commands[i].command);
+            Command pcommand = commandHistory->commands[i];
+            printf("[%d]: %s ", size - i - 1, pcommand.command);
+            for(int i = 0; i < pcommand.numOfParameters; i++){
+                printf("%s ", pcommand.parameters[i]);
+            }
+            printf("\n");
         }
         return;
     }
