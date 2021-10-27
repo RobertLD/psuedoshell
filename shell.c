@@ -10,7 +10,11 @@
 //Shell Flags
 #define DEBUGMODE 1
 
+<<<<<<< HEAD
 enum commandType {
+=======
+typedef enum commandType {
+>>>>>>> 31cc97787a506576e1c7687af16960b9c95fed82
     typemovetodir,
     typewhereami,
     typehistory,
@@ -22,7 +26,7 @@ enum commandType {
     typerepeat,
     typedalekall
 
-};
+} commandType;
 
 
 
@@ -48,7 +52,11 @@ Directory *initDir();
 char *getCommands(); // Grab commands from standard output and parse them
 Command *parseCommand(); // Grab line, tokenize
 void executeCommand(Command *pcommand);
+<<<<<<< HEAD
 void movetodir();
+=======
+commandType setType(char* command);
+>>>>>>> 31cc97787a506576e1c7687af16960b9c95fed82
 
 // Global access variables
 Directory *dirinfo; //init current directory
@@ -135,6 +143,49 @@ void executeCommand(Command *pcommand){
     }
 }
 
+
+
+commandType setType(char* command){
+
+    if(strcmp(command, "movetodir") == 0){
+        return typemovetodir;
+    } 
+    else if(strcmp(command, "whereami") == 0){
+        return typewhereami;
+    }
+    else if(strcmp(command, "history") == 0){
+        return typehistory;
+    }
+    else if(strcmp(command, "byebye") == 0){
+        return typebyebye;
+    }
+    else if(strcmp(command, "replay") == 0){
+        return typereplay;
+    }
+    else if(strcmp(command, "start") == 0){
+        return typestart;
+    }
+    else if(strcmp(command, "background") == 0){
+        return typebackground;
+    }
+    else if(strcmp(command, "dalek") == 0){
+        return typedalek;
+    }
+    else if(strcmp(command, "repeat") == 0){
+        return typerepeat;
+    }
+    else if(strcmp(command, "dalekall") == 0){
+        return typedalekall;
+    } else {
+        return -1;
+    }
+
+
+}
+
+
+
+
 int main(int argc, char **argv){
 
     // Initilize shell program
@@ -160,4 +211,5 @@ int main(int argc, char **argv){
 
     }
 }
+
 
