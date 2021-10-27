@@ -10,19 +10,19 @@
 //Shell Flags
 #define DEBUGMODE 1
 
-enum commandType {
-    movetodir,
-    whereami,
-    history,
-    byebye,
-    replay,
-    start,
-    background,
-    dalek,
-    repeat,
-    dalekall
+typedef enum commandType {
+    typemovetodir,
+    typewhereami,
+    typehistory,
+    typebyebye,
+    typereplay,
+    typestart,
+    typebackground,
+    typedalek,
+    typerepeat,
+    typedalekall
 
-};
+} commandType;
 
 
 
@@ -48,6 +48,7 @@ Directory *initDir();
 char *getCommands(); // Grab commands from standard output and parse them
 Command *parseCommand(); // Grab line, tokenize
 void executeCommand(Command *pcommand);
+commandType setType(char* command);
 
 // Global access variables
 Directory *dirinfo; //init current directory
@@ -115,6 +116,50 @@ Command *parseCommand(char* command){
     return pcommand;
 
 }
+
+
+
+commandType setType(char* command){
+
+    if(strcmp(command, "movetodir") == 0){
+        return typemovetodir;
+    } 
+    else if(strcmp(command, "whereami") == 0){
+        return typewhereami;
+    }
+    else if(strcmp(command, "history") == 0){
+        return typehistory;
+    }
+    else if(strcmp(command, "byebye") == 0){
+        return typebyebye;
+    }
+    else if(strcmp(command, "replay") == 0){
+        return typereplay;
+    }
+    else if(strcmp(command, "start") == 0){
+        return typestart;
+    }
+    else if(strcmp(command, "background") == 0){
+        return typebackground;
+    }
+    else if(strcmp(command, "dalek") == 0){
+        return typedalek;
+    }
+    else if(strcmp(command, "repeat") == 0){
+        return typerepeat;
+    }
+    else if(strcmp(command, "dalekall") == 0){
+        return typedalekall;
+    } else {
+        return -1;
+    }
+
+
+}
+
+
+
+
 int main(int argc, char **argv){
 
     // Initilize shell program
@@ -140,4 +185,5 @@ int main(int argc, char **argv){
 
     }
 }
+
 
