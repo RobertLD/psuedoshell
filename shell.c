@@ -153,7 +153,7 @@ void executeCommand(Command *pcommand){
         case typedalekall:
             dalekall();
         default:
-            printf("This command is not a legal command!")
+            printf("This command is not a legal command!");
         return;
     }
 
@@ -201,37 +201,37 @@ commandType setType(char* command){
 
 void movetodir(Command *pcommand){
 
-    Directory->currentDirectory = pcommand->parameters[0];
+    dirinfo->currentDirectory = pcommand->parameters[0];
 
     if(DEBUGMODE){
-        printf("Changed to: %s\n", Directory->currentDirectory);
+        printf("Changed to: %s\n", dirinfo->currentDirectory);
 
     }
     return;
 }
 void whereami(){
-    printf("%s\n", Directory->currentDirectory);
+    printf("%s\n", dirinfo->currentDirectory);
     return;
 }
-void history(){
+void history(Command *pcommand){
     return;
 }
 void byebye(){
     return;
 }
-void replay(){
+void replay(Command *pcommand){
     return;
 }
-void start(){
+void start(Command *pcommand){
     return;
 }
-void background(){
+void background(Command *pcommand){
     return;
 }
-void dalek(){
+void dalek(Command *pcommand){
     return;
 }
-void repeat(){
+void repeat(Command *pcommand){
     return;
 }
 void dalekall(){
