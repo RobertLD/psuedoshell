@@ -59,7 +59,7 @@ typedef struct Processes{
 
 //function prototypes
 Directory *initDir();
-void initHistory();
+void initHistory(int readFromFile);
 char *getCommands(); // Grab commands from standard output and parse them
 Command *parseCommand(); // Grab line, tokenize
 void executeCommand(Command *pcommand);
@@ -93,12 +93,42 @@ Directory *initDir(){
     return retval;
 }
 
-void initHistory(){
+void initHistory(int readFromFile){
     commandHistory = malloc(sizeof(commandHistory));
     commandHistory->size = 0;
     commandHistory->commands = malloc(sizeof(Command) * MAXHISTORYSIZE);
-    return;
 
+    if(!readFromFile){
+        return;
+    }
+
+    FILE *ptr;
+    ptr = fopen("history.txt", "r");
+
+    if(ptr != NULL){
+        while(1){
+            Command *pcommand = malloc(sizeof(Command));
+            
+            size_t len = BUFFERSIZE;
+
+            char* line = malloc(BUFFERSIZE * sizeof(char));
+            getline(&line, &len, ptr);
+
+            if(feof(ptr)){
+                break;
+            }
+
+            line[strcspn(line, "\n")] = 0;
+
+            pcommand = parseCommand(line);
+
+            addtohistory(pcommand);
+        }
+        fclose(ptr);
+    }
+    
+
+    return;
 }
 
 char *getCommands(){
@@ -254,7 +284,7 @@ void history(Command *pcommand){
     if(params != 0 && strcmp(pcommand->parameters[0], "-c") == 0){
         free(commandHistory->commands);
         free(commandHistory);
-        initHistory();
+        initHistory(0);
     }
     else{
         int size = commandHistory->size;
@@ -265,11 +295,28 @@ void history(Command *pcommand){
     }
 }
 void byebye(){
+
+    FILE *ptr;
+    ptr = fopen("history.txt", "w");
+    
+    int size = commandHistory->size;
+    for(int i = 0; i < size - 1; i++){
+        fprintf(ptr, "%s\n", commandHistory->commands[i].command);
+    }
+    fclose(ptr);
     exit(0);
     return;
 }
 void replay(Command *pcommand){
+    
     int commandNumber = (int) strtol(pcommand->parameters[0], (char **)NULL, 10);
+    
+    if(commandNumber > commandHistory->size){
+        printf("Cannot replay a future command.\n");
+    } else if(commandNumber < 0) printf("Invalid replay index.\n");
+
+    printf("I am in replay and my command to rerun is: %d\n", commandNumber);
+    printf("The command is %s\n", commandHistory->commands[commandNumber].command);
     executeCommand(&commandHistory->commands[commandNumber]);
     return;
 }
@@ -371,7 +418,7 @@ int main(int argc, char **argv){
 
     // Initilize shell program
     dirinfo = initDir();
-    initHistory();
+    initHistory(1);
     activeProcesses = malloc(sizeof(activeProcesses));
     //Variables
     char *command;
