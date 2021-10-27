@@ -22,7 +22,7 @@ enum commandType {
     repeat,
     dalekall
 
-}
+};
 
 
 
