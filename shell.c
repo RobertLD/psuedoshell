@@ -10,7 +10,11 @@
 //Shell Flags
 #define DEBUGMODE 1
 
+<<<<<<< HEAD
+enum commandType {
+=======
 typedef enum commandType {
+>>>>>>> 31cc97787a506576e1c7687af16960b9c95fed82
     typemovetodir,
     typewhereami,
     typehistory,
@@ -48,7 +52,11 @@ Directory *initDir();
 char *getCommands(); // Grab commands from standard output and parse them
 Command *parseCommand(); // Grab line, tokenize
 void executeCommand(Command *pcommand);
+<<<<<<< HEAD
+void movetodir();
+=======
 commandType setType(char* command);
+>>>>>>> 31cc97787a506576e1c7687af16960b9c95fed82
 
 // Global access variables
 Directory *dirinfo; //init current directory
@@ -115,6 +123,24 @@ Command *parseCommand(char* command){
 
     return pcommand;
 
+}
+
+// Executes the command selected by the user
+void executeCommand(Command *pcommand){
+    enum commandType type = setType(pcommand->command);
+
+    switch (type) {
+        case typemovetodir:
+        case typewhereami:
+        case typehistory:
+        case typebyebye:
+        case typereplay:
+        case typestart:
+        case typebackground:
+        case typedalek:
+        case typerepeat:
+        case typedalekall:
+    }
 }
 
 
