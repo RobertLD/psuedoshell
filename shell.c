@@ -301,7 +301,12 @@ void byebye(){
     
     int size = commandHistory->size;
     for(int i = 0; i < size - 1; i++){
-        fprintf(ptr, "%s\n", commandHistory->commands[i].command);
+        Command pcommand = commandHistory->commands[i];
+        fprintf(ptr, "%s ", pcommand.command);
+        for(int i = 0; i < pcommand.numOfParameters; i++){
+            fprintf(ptr, "%s ", pcommand.parameters[i]);
+        }
+        fprintf(ptr, "\n");
     }
     fclose(ptr);
     exit(0);
