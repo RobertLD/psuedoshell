@@ -11,7 +11,7 @@
 #define DEBUGMODE 1
 
 typedef enum commandType {
-    typemovetodir,
+    typemovetodir = 0,
     typewhereami,
     typehistory,
     typebyebye,
@@ -84,7 +84,7 @@ char *getCommands(){
     //grab commands
     char* line = malloc(BUFFERSIZE * sizeof(char));
     getline(&line, &len, stdin);
-
+    line[strcspn(line, "\n")] = 0;
     //TODO: parse commands with multiple parameters
 
     
@@ -171,11 +171,11 @@ void executeCommand(Command *pcommand){
 
 
 commandType setType(char* command){
-
     if(strcmp(command, "movetodir") == 0){
         return typemovetodir;
     } 
     else if(strcmp(command, "whereami") == 0){
+        
         return typewhereami;
     }
     else if(strcmp(command, "history") == 0){
