@@ -129,34 +129,43 @@ Command *parseCommand(char* command){
 
 // Executes the command selected by the user
 void executeCommand(Command *pcommand){
-    commandType type = setType(pcommand->command);
+    enum commandType type = setType(pcommand->command);
 
     switch (type) {
         case typemovetodir:
             movetodir(pcommand);
+            break;
         case typewhereami:
             whereami();
+            break;
         case typehistory:
             history(pcommand);
+            break;
         case typebyebye:
             byebye();
+            break;
         case typereplay:
             replay(pcommand);
+            break;
         case typestart:
             start(pcommand);
+            break;
         case typebackground:
             background(pcommand);
+            break;
         case typedalek:
             dalek(pcommand);
+            break;
         case typerepeat:
             repeat(pcommand);
+            break;
         case typedalekall:
             dalekall();
+            break;
         default:
-            printf("This command is not a legal command!");
+            printf("This command is not a legal command!\n");
         return;
     }
-
 }
 
 
