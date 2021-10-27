@@ -10,10 +10,26 @@
 //Shell Flags
 #define DEBUGMODE 1
 
+enum commandType {
+    movetodir,
+    whereami,
+    history,
+    byebye,
+    replay,
+    start,
+    background,
+    dalek,
+    repeat,
+    dalekall
+
+}
+
+
+
 // Holds directory information
-typedef struct directory{
+typedef struct Directory{
     char* currentDirectory;
-} directory; 
+} Directory; 
 
 typedef struct Command{
     char* command;
@@ -21,22 +37,30 @@ typedef struct Command{
     char** parameters;
 } Command; 
 
+typedef struct History{
+    Command *commands;
+    int size;
+} History; 
+
+
 //function prototypes
-directory *initDir();
+Directory *initDir();
 char *getCommands(); // Grab commands from standard output and parse them
 Command *parseCommand(); // Grab line, tokenize
 
 // Global access variables
-directory *dirinfo; //init current directory
+Directory *dirinfo; //init current directory
 
     
 
 
-directory *initDir(){
+Directory *initDir(){
     //Init directory info with the current working directory
-    directory* retval = malloc(sizeof(directory));
+    Directory* retval = malloc(sizeof(Directory));
     retval->currentDirectory = (char*) malloc(BUFFERSIZE * sizeof(char));
+
     getcwd(retval->currentDirectory, BUFFERSIZE);
+
     return retval;
 }
 
@@ -65,7 +89,7 @@ Command *parseCommand(char* command){
     pcommand->parameters = malloc(sizeof(char*) * MAXTOKENS);
 
 
-    //Grab first token
+    //Grab first token | Command
     char *token = strtok(command, " ");
     strcpy(pcommand->command, token);
 
@@ -104,6 +128,7 @@ int main(int argc, char **argv){
         command = getCommands();
         pcommand = parseCommand(command);
 
+
         //DEBUG: Print the contents of pcommand
         if(DEBUGMODE) {
             printf("Command: %s\n", pcommand->command);
@@ -112,5 +137,8 @@ int main(int argc, char **argv){
             }
         }
 
+        
+
     }
 }
+
