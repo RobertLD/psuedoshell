@@ -120,7 +120,7 @@ Command *parseCommand(char* command){
 
 // Executes the command selected by the user
 void executeCommand(Command *pcommand){
-    enum commandType type = setType(pcommand->command);
+    commandType type = setType(pcommand->command);
 
     switch (type) {
         case typemovetodir:
@@ -133,7 +133,9 @@ void executeCommand(Command *pcommand){
         case typedalek:
         case typerepeat:
         case typedalekall:
+
     }
+
 }
 
 
@@ -175,6 +177,46 @@ commandType setType(char* command){
 
 
 }
+
+void movetodir(Command *pcommand){
+
+    Directory->currentDirectory = pcommand->parameters[0];
+
+    if(DEBUGMODE){
+        printf("Changed to: %s\n", Directory->currentDirectory);
+
+    }
+    return;
+}
+void whereami(){
+    printf("%s\n", Directory->currentDirectory);
+    return;
+}
+void history(){
+    return;
+}
+void byebye(){
+    return;
+}
+void replay(){
+    return;
+}
+void start(){
+    return;
+}
+void background(){
+    return;
+}
+void dalek(){
+    return;
+}
+void repeat(){
+    return;
+}
+void dalekall(){
+    return;
+}
+
 
 
 
