@@ -1,10 +1,8 @@
 #include <stdio.h>
-
+#include <unistd.h> 
 int main(){
 
-    for(int i = 0; i < 10000000; i++){
-        printf("%d", i);    
-    }
+    sleep(30);
     return 0;
 
 }

@@ -52,6 +52,10 @@ typedef struct History{
     int size;
 } History; 
 
+typedef struct Processes{
+    int processPIDS[BUFFERSIZE];
+    pid_t size;
+} Proceses;
 
 //function prototypes
 Directory *initDir();
@@ -75,6 +79,7 @@ void addtohistory(Command *pcommand);
 // Global access variables
 Directory *dirinfo; //init current directory
 History *commandHistory;
+Proceses activeProcesses = malloc(sizeof(activeProcesses));
     
 
 
@@ -313,7 +318,7 @@ void start(Command *pcommand){
     //pids
     pid_t parent = getpid();
     pid_t pid = fork();
-
+    activeProcesses.processPIDS[activeProcesses.size++] = pid;
     //construct command string
     char *cmdString[] = {program, NULL};
     if(pid == -1) {
@@ -331,6 +336,28 @@ void start(Command *pcommand){
     return;
 }
 void background(Command *pcommand){
+    char program[BUFFERSIZE];
+    strcpy(program, pcommand->parameters[0]);
+
+    //pids
+    pid_t parent = getpid();
+    pid_t pid = fork();
+    activeProcesses.processPIDS[activeProcesses.size++] = pid;
+    //construct command string
+    char *cmdString[] = {program, NULL};
+    if(pid == -1) {
+        printf("Error starting process.\n");
+    } else if(pid > 0){
+        printf("I am the parent of this child!\n");
+
+    } else {
+        if(DEBUGMODE){
+            printf("Starting... %s\n\n", program);
+        }
+        setpgid(0,0);
+        execv(program, cmdString);
+    }
+    
     return;
 }
 void dalek(Command *pcommand){
@@ -340,6 +367,9 @@ void repeat(Command *pcommand){
     return;
 }
 void dalekall(){
+    for(int i =0; i < activeProcesses.size; i++){
+        
+    }
     return;
 }
 void addtohistory(Command *pcommand){
