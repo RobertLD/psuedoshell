@@ -164,6 +164,7 @@ void executeCommand(Command *pcommand){
             break;
         default:
             printf("This command is not a legal command!\n");
+            break;
         return;
     }
 }
