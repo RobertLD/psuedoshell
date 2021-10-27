@@ -79,7 +79,7 @@ void addtohistory(Command *pcommand);
 // Global access variables
 Directory *dirinfo; //init current directory
 History *commandHistory;
-Proceses activeProcesses = malloc(sizeof(activeProcesses));
+Proceses *activeProcesses;
     
 
 
@@ -269,7 +269,7 @@ void byebye(){
     return;
 }
 void replay(Command *pcommand){
-    int commandNumber = (int) strtol(pcommand->parameters[0], (char **)NULL, 1000);
+    int commandNumber = (int) strtol(pcommand->parameters[0], (char **)NULL, 10);
     executeCommand(&commandHistory->commands[commandNumber]);
     return;
 }
@@ -280,7 +280,7 @@ void start(Command *pcommand){
     //pids
     pid_t parent = getpid();
     pid_t pid = fork();
-    activeProcesses.processPIDS[activeProcesses.size++] = pid;
+    activeProcesses->processPIDS[activeProcesses->size++] = pid;
     //construct command string
     char *cmdString[] = {program, NULL};
     if(pid == -1) {
@@ -297,40 +297,63 @@ void start(Command *pcommand){
     
     return;
 }
+// void background(Command *pcommand){
+//     char program[BUFFERSIZE];
+//     strcpy(program, pcommand->parameters[0]);
+
+//     //pids
+//     pid_t parent = getpid();
+//     pid_t pid = fork();
+//     printf("Child created with pid: %d", parent);
+//     activeProcesses->processPIDS[activeProcesses->size++] = pid;
+//     //construct command string
+//     char *cmdString[] = {program, NULL};
+//     if(pid == -1) {
+//         printf("Error starting process.\n");
+//     } else if(pid > 0){
+//         printf("I am the parent of this child!\n");
+
+//     } else {
+//         if(DEBUGMODE){
+//             printf("Starting... %s\n\n", program);
+//         }
+//         setpgid(0,0);
+//         execv(program, cmdString);
+//     }
+    
+//     return;
+// }
 void background(Command *pcommand){
     char program[BUFFERSIZE];
     strcpy(program, pcommand->parameters[0]);
-
-    //pids
-    pid_t parent = getpid();
-    pid_t pid = fork();
-    activeProcesses.processPIDS[activeProcesses.size++] = pid;
-    //construct command string
     char *cmdString[] = {program, NULL};
-    if(pid == -1) {
-        printf("Error starting process.\n");
-    } else if(pid > 0){
-        printf("I am the parent of this child!\n");
+    pid_t parent = getpid();
+    pid_t child = fork();
 
-    } else {
-        if(DEBUGMODE){
-            printf("Starting... %s\n\n", program);
-        }
-        setpgid(0,0);
+    if(child == 0){
         execv(program, cmdString);
     }
-    
+
+    //In parent add PID to the struct
+    activeProcesses->processPIDS[activeProcesses->size++] = child;
+    printf("&[%d]\n", child);
+
     return;
 }
 void dalek(Command *pcommand){
+    int pid = strtol(pcommand->parameters[0], (char **)NULL, 10);
+    printf("Killing [%d]\n", pid);
+    kill(pid, SIGKILL);
     return;
 }
 void repeat(Command *pcommand){
     return;
 }
 void dalekall(){
-    for(int i =0; i < activeProcesses.size; i++){
-        
+    for(int i = 0; i <= activeProcesses->size; i++){
+        if(i == 0) i++;
+        printf("Killing PID: %d", i);
+        kill(activeProcesses->processPIDS[i], SIGKILL);
     }
     return;
 }
@@ -349,11 +372,13 @@ int main(int argc, char **argv){
     // Initilize shell program
     dirinfo = initDir();
     initHistory();
+    activeProcesses = malloc(sizeof(activeProcesses));
     //Variables
     char *command;
     
     //Shell loop
     while(1){
+        fflush(stdout);
         printf("# ");
         fflush(stdout);
         
