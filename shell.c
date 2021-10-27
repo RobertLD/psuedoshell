@@ -1,3 +1,10 @@
+/*
+TODO:
+
+check for fake dirs in movetodir
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -237,10 +244,20 @@ void whereami(){
     return;
 }
 void history(Command *pcommand){
-    for(int i = 0; i < commandHistory->size; i++){
-        printf("[%d]: %s\n", i, commandHistory->commands[i].command);
+    int params = pcommand->numOfParameters;
+
+    if(params != 0 && strcmp(pcommand->parameters[0], "-c") == 0){
+        free(commandHistory->commands);
+        free(commandHistory);
+        initHistory();
     }
-    return;
+    else{
+        int size = commandHistory->size;
+        for(int i = size - 1; i >= 0; i--){
+            printf("[%d]: %s\n", size - i - 1, commandHistory->commands[i].command);
+        }
+        return;
+    }
 }
 void byebye(){
     exit(0);
