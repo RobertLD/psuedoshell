@@ -52,6 +52,10 @@ typedef struct History{
     int size;
 } History; 
 
+typedef struct Processes{
+    int processPIDS[BUFFERSIZE];
+    pid_t size;
+} Proceses;
 
 //function prototypes
 Directory *initDir();
@@ -75,6 +79,7 @@ void addtohistory(Command *pcommand);
 // Global access variables
 Directory *dirinfo; //init current directory
 History *commandHistory;
+Proceses *activeProcesses;
     
 
 
@@ -308,7 +313,17 @@ void byebye(){
     return;
 }
 void replay(Command *pcommand){
+    
     int commandNumber = (int) strtol(pcommand->parameters[0], (char **)NULL, 10);
+    
+    if(commandNumber > commandHistory->size){
+        printf("Cannot replay a future command.\n");
+    } else if(commandNumber < 0) printf("Invalid replay index.\n");
+
+    printf("I am in replay and my command to rerun is: %d\n", commandNumber);
+    printf("The command is %s\n", commandHistory->commands[commandNumber].command);
+
+    // Passing the pcommand
     executeCommand(&commandHistory->commands[commandNumber]);
     return;
 }
@@ -319,7 +334,7 @@ void start(Command *pcommand){
     //pids
     pid_t parent = getpid();
     pid_t pid = fork();
-
+    activeProcesses->processPIDS[activeProcesses->size++] = pid;
     //construct command string
     char *cmdString[] = {program, NULL};
     if(pid == -1) {
@@ -336,16 +351,64 @@ void start(Command *pcommand){
     
     return;
 }
+// void background(Command *pcommand){
+//     char program[BUFFERSIZE];
+//     strcpy(program, pcommand->parameters[0]);
+
+//     //pids
+//     pid_t parent = getpid();
+//     pid_t pid = fork();
+//     printf("Child created with pid: %d", parent);
+//     activeProcesses->processPIDS[activeProcesses->size++] = pid;
+//     //construct command string
+//     char *cmdString[] = {program, NULL};
+//     if(pid == -1) {
+//         printf("Error starting process.\n");
+//     } else if(pid > 0){
+//         printf("I am the parent of this child!\n");
+
+//     } else {
+//         if(DEBUGMODE){
+//             printf("Starting... %s\n\n", program);
+//         }
+//         setpgid(0,0);
+//         execv(program, cmdString);
+//     }
+    
+//     return;
+// }
 void background(Command *pcommand){
+    char program[BUFFERSIZE];
+    strcpy(program, pcommand->parameters[0]);
+    char *cmdString[] = {program, NULL};
+    pid_t parent = getpid();
+    pid_t child = fork();
+
+    if(child == 0){
+        execv(program, cmdString);
+    }
+
+    //In parent add PID to the struct
+    activeProcesses->processPIDS[activeProcesses->size++] = child;
+    printf("&[%d]\n", child);
+
     return;
 }
 void dalek(Command *pcommand){
+    int pid = strtol(pcommand->parameters[0], (char **)NULL, 10);
+    printf("Killing [%d]\n", pid);
+    kill(pid, SIGKILL);
     return;
 }
 void repeat(Command *pcommand){
     return;
 }
 void dalekall(){
+    for(int i = 0; i <= activeProcesses->size; i++){
+        if(i == 0) i++;
+        printf("Killing PID: %d", i);
+        kill(activeProcesses->processPIDS[i], SIGKILL);
+    }
     return;
 }
 void addtohistory(Command *pcommand){
@@ -363,11 +426,13 @@ int main(int argc, char **argv){
     // Initilize shell program
     dirinfo = initDir();
     initHistory(1);
+    activeProcesses = malloc(sizeof(activeProcesses));
     //Variables
     char *command;
     
     //Shell loop
     while(1){
+        fflush(stdout);
         printf("# ");
         fflush(stdout);
         
