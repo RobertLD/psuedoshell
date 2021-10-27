@@ -142,12 +142,8 @@ void executeCommand(Command *pcommand){
         case typedalek:
         case typerepeat:
         case typedalekall:
-<<<<<<< HEAD
-
-=======
         default:
         return;
->>>>>>> b37904cf03ae2f0fe4952d2e07bb949413f70949
     }
 
 }
