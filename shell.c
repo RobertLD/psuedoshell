@@ -262,6 +262,9 @@ int main(int argc, char **argv){
     
     //Shell loop
     while(1){
+        printf("# ");
+        fflush(stdout);
+        
         Command *pcommand = malloc(sizeof(command));
         command = getCommands();
         pcommand = parseCommand(command);
