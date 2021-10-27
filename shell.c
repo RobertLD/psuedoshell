@@ -129,41 +129,43 @@ Command *parseCommand(char* command){
 
 // Executes the command selected by the user
 void executeCommand(Command *pcommand){
-    commandType type = setType(pcommand->command);
+    enum commandType type = setType(pcommand->command);
 
     switch (type) {
         case typemovetodir:
             movetodir(pcommand);
+            break;
         case typewhereami:
             whereami();
+            break;
         case typehistory:
             history(pcommand);
+            break;
         case typebyebye:
             byebye();
+            break;
         case typereplay:
             replay(pcommand);
+            break;
         case typestart:
             start(pcommand);
+            break;
         case typebackground:
             background(pcommand);
+            break;
         case typedalek:
             dalek(pcommand);
+            break;
         case typerepeat:
             repeat(pcommand);
+            break;
         case typedalekall:
-<<<<<<< HEAD
             dalekall();
-=======
-<<<<<<< HEAD
-
-=======
->>>>>>> 0dce62f8b4a71a068afb6f5dd239d3460e26fba8
+            break;
         default:
-        printf("This command is not a legal command!")
+        printf("This command is not a legal command!");
         return;
->>>>>>> b37904cf03ae2f0fe4952d2e07bb949413f70949
     }
-
 }
 
 
@@ -205,46 +207,6 @@ commandType setType(char* command){
 
 
 }
-
-void movetodir(Command *pcommand){
-
-    Directory->currentDirectory = pcommand->parameters[0];
-
-    if(DEBUGMODE){
-        printf("Changed to: %s\n", Directory->currentDirectory);
-
-    }
-    return;
-}
-void whereami(){
-    printf("%s\n", Directory->currentDirectory);
-    return;
-}
-void history(){
-    return;
-}
-void byebye(){
-    return;
-}
-void replay(){
-    return;
-}
-void start(){
-    return;
-}
-void background(){
-    return;
-}
-void dalek(){
-    return;
-}
-void repeat(){
-    return;
-}
-void dalekall(){
-    return;
-}
-
 
 
 
