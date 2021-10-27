@@ -52,6 +52,10 @@ typedef struct History{
     int size;
 } History; 
 
+typedef struct Processes{
+    int processPIDS[BUFFERSIZE];
+    pid_t size;
+} Proceses;
 
 //function prototypes
 Directory *initDir();
@@ -75,10 +79,7 @@ void addtohistory(Command *pcommand);
 // Global access variables
 Directory *dirinfo; //init current directory
 History *commandHistory;
-<<<<<<< HEAD
 Proceses *activeProcesses;
-=======
->>>>>>> fe4837b131b1f9c835e44bbc6863de91778b21a1
     
 
 
@@ -316,6 +317,8 @@ void replay(Command *pcommand){
 
     printf("I am in replay and my command to rerun is: %d\n", commandNumber);
     printf("The command is %s\n", commandHistory->commands[commandNumber].command);
+
+    // Passing the pcommand
     executeCommand(&commandHistory->commands[commandNumber]);
     return;
 }
@@ -326,11 +329,7 @@ void start(Command *pcommand){
     //pids
     pid_t parent = getpid();
     pid_t pid = fork();
-<<<<<<< HEAD
     activeProcesses->processPIDS[activeProcesses->size++] = pid;
-=======
-
->>>>>>> fe4837b131b1f9c835e44bbc6863de91778b21a1
     //construct command string
     char *cmdString[] = {program, NULL};
     if(pid == -1) {
@@ -374,7 +373,6 @@ void start(Command *pcommand){
 //     return;
 // }
 void background(Command *pcommand){
-<<<<<<< HEAD
     char program[BUFFERSIZE];
     strcpy(program, pcommand->parameters[0]);
     char *cmdString[] = {program, NULL};
@@ -389,8 +387,6 @@ void background(Command *pcommand){
     activeProcesses->processPIDS[activeProcesses->size++] = child;
     printf("&[%d]\n", child);
 
-=======
->>>>>>> fe4837b131b1f9c835e44bbc6863de91778b21a1
     return;
 }
 void dalek(Command *pcommand){
@@ -403,14 +399,11 @@ void repeat(Command *pcommand){
     return;
 }
 void dalekall(){
-<<<<<<< HEAD
     for(int i = 0; i <= activeProcesses->size; i++){
         if(i == 0) i++;
         printf("Killing PID: %d", i);
         kill(activeProcesses->processPIDS[i], SIGKILL);
     }
-=======
->>>>>>> fe4837b131b1f9c835e44bbc6863de91778b21a1
     return;
 }
 void addtohistory(Command *pcommand){
