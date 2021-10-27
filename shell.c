@@ -22,7 +22,7 @@ enum commandType {
     repeat,
     dalekall
 
-}
+};
 
 
 
@@ -47,6 +47,7 @@ typedef struct History{
 Directory *initDir();
 char *getCommands(); // Grab commands from standard output and parse them
 Command *parseCommand(); // Grab line, tokenize
+void executeCommand(Command *pcommand);
 
 // Global access variables
 Directory *dirinfo; //init current directory
