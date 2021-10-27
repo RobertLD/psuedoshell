@@ -48,8 +48,17 @@ Directory *initDir();
 char *getCommands(); // Grab commands from standard output and parse them
 Command *parseCommand(); // Grab line, tokenize
 void executeCommand(Command *pcommand);
-void movetodir();
 commandType setType(char* command);
+void movetodir(Command *pcommand);
+void whereami();
+void history(Command *pcommand);
+void byebye();
+void replay(Command *pcommand);
+void start(Command *pcommand);
+void background(Command *pcommand);
+void dalek(Command *pcommand);
+void repeat(Command *pcommand);
+void dalekall(Command *pcommand);
 
 // Global access variables
 Directory *dirinfo; //init current directory
@@ -133,7 +142,12 @@ void executeCommand(Command *pcommand){
         case typedalek:
         case typerepeat:
         case typedalekall:
+<<<<<<< HEAD
 
+=======
+        default:
+        return;
+>>>>>>> b37904cf03ae2f0fe4952d2e07bb949413f70949
     }
 
 }
