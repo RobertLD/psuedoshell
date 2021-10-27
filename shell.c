@@ -58,7 +58,7 @@ void start(Command *pcommand);
 void background(Command *pcommand);
 void dalek(Command *pcommand);
 void repeat(Command *pcommand);
-void dalekall(Command *pcommand);
+void dalekall();
 
 // Global access variables
 Directory *dirinfo; //init current directory
@@ -133,16 +133,27 @@ void executeCommand(Command *pcommand){
 
     switch (type) {
         case typemovetodir:
+            movetodir(pcommand);
         case typewhereami:
+            whereami();
         case typehistory:
+            history(pcommand);
         case typebyebye:
+            byebye();
         case typereplay:
+            replay(pcommand);
         case typestart:
+            start(pcommand);
         case typebackground:
+            background(pcommand);
         case typedalek:
+            dalek(pcommand);
         case typerepeat:
+            repeat(pcommand);
         case typedalekall:
+            dalekall();
         default:
+            printf("This command is not a legal command!")
         return;
     }
 
@@ -245,6 +256,7 @@ int main(int argc, char **argv){
         command = getCommands();
         pcommand = parseCommand(command);
 
+        executeCommand(pcommand);
 
         //DEBUG: Print the contents of pcommand
         if(DEBUGMODE) {
