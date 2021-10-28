@@ -2,6 +2,8 @@
 TODO:
 
 check for fake dirs in movetodir
+make repeat
+pass parameters in for the start command
 
 */
 
@@ -264,6 +266,8 @@ commandType setType(char* command){
 
 }
 
+// Changes the current directory to the given directory if it exists, else it 
+// raises an error
 void movetodir(Command *pcommand){
 
     dirinfo->currentDirectory = pcommand->parameters[0];
@@ -274,10 +278,15 @@ void movetodir(Command *pcommand){
     }
     return;
 }
+
+// Prints the current directory
 void whereami(){
     printf("%s\n", dirinfo->currentDirectory);
     return;
 }
+
+// Prints the history in reverse order (newest first). If "-c" is passed as a 
+// parameter, then the history is cleared
 void history(Command *pcommand){
     int params = pcommand->numOfParameters;
 
@@ -299,6 +308,8 @@ void history(Command *pcommand){
         return;
     }
 }
+
+// Closes the shell and saves the current history to an external file
 void byebye(){
 
     FILE *ptr;
@@ -317,6 +328,9 @@ void byebye(){
     exit(0);
     return;
 }
+
+// Replays the given command referenced in the order that they are printed (0 
+// is the most recent call)
 void replay(Command *pcommand){
     
     int commandNumber = (int) strtol(pcommand->parameters[0], (char **)NULL, 10);
@@ -332,6 +346,8 @@ void replay(Command *pcommand){
     executeCommand(&commandHistory->commands[commandNumber]);
     return;
 }
+
+// Runs the given program with the parameters passed to it
 void start(Command *pcommand){
     char program[BUFFERSIZE];
     strcpy(program, pcommand->parameters[0]);
@@ -356,32 +372,9 @@ void start(Command *pcommand){
     
     return;
 }
-// void background(Command *pcommand){
-//     char program[BUFFERSIZE];
-//     strcpy(program, pcommand->parameters[0]);
 
-//     //pids
-//     pid_t parent = getpid();
-//     pid_t pid = fork();
-//     printf("Child created with pid: %d", parent);
-//     activeProcesses->processPIDS[activeProcesses->size++] = pid;
-//     //construct command string
-//     char *cmdString[] = {program, NULL};
-//     if(pid == -1) {
-//         printf("Error starting process.\n");
-//     } else if(pid > 0){
-//         printf("I am the parent of this child!\n");
-
-//     } else {
-//         if(DEBUGMODE){
-//             printf("Starting... %s\n\n", program);
-//         }
-//         setpgid(0,0);
-//         execv(program, cmdString);
-//     }
-    
-//     return;
-// }
+// Runs a given program with the parameters passed, but in the background. 
+// Prints the PID of the processes that was created
 void background(Command *pcommand){
     char program[BUFFERSIZE];
     strcpy(program, pcommand->parameters[0]);
@@ -399,15 +392,23 @@ void background(Command *pcommand){
 
     return;
 }
+
+// Terminates the process with the given PID
 void dalek(Command *pcommand){
     int pid = strtol(pcommand->parameters[0], (char **)NULL, 10);
     printf("Killing [%d]\n", pid);
     kill(pid, SIGKILL);
     return;
 }
+
+// Runs the given program with the given parameters n times and prints the PIDs 
+// of the processes
 void repeat(Command *pcommand){
     return;
 }
+
+// Kills all processes that were created by the shell and prints the PIDs of 
+// the killed processes
 void dalekall(){
     for(int i = 0; i <= activeProcesses->size; i++){
         if(i == 0) i++;
@@ -416,6 +417,8 @@ void dalekall(){
     }
     return;
 }
+
+// Helper function that adds a given command to a list of commands
 void addtohistory(Command *pcommand){
     commandHistory->commands[commandHistory->size] = *pcommand;
     commandHistory->size++;
