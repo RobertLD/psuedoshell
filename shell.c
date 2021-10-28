@@ -24,56 +24,85 @@ handle relative paths in start
 //Shell Flags
 #define DEBUGMODE 1
 
-
+// ======================
+// Data struct definition
+// ======================
 
 // Holds directory information
 typedef struct Directory{
     char* currentDirectory;
 } Directory; 
 
+// Holds the command name, number of parameters, and an array of the parameters
 typedef struct Command{
     char* command;
     int numOfParameters;
     char** parameters;
 } Command; 
 
+// Holds an array containing the history
 typedef struct History{
     Command *commands;
     int size;
 } History; 
 
+// Holds the active processes
 typedef struct Processes{
     int processPIDS[BUFFERSIZE];
     pid_t size;
-} Proceses;
+} Processes;
 
 
+// ===================
+// Function prototypes
+// ===================
 
-//function prototypes
 Directory *initDir();
+ 
 void initHistory(int readFromFile);
+
 char *getCommands(); // Grab commands from standard output and parse them
+
 Command *parseCommand(); // Grab line, tokenize
+
 void executeCommand(Command *pcommand);
+
 void movetodir(Command *pcommand);
+
 void whereami();
+
 void history(Command *pcommand);
+
 void byebye();
+
 void replay(Command *pcommand);
+
 void start(Command *pcommand);
+
 void background(Command *pcommand);
+
 void dalek(Command *pcommand);
+
 void repeat(Command *pcommand);
+
 void dalekall();
+
 void addtohistory(Command *pcommand);
 
+// =======================
 // Global access variables
+// =======================
+
 Directory *dirinfo; //init current directory
 History *commandHistory;
-Proceses *activeProcesses;
+Processes *activeProcesses;
     
 
+// =========
+// Functions
+// =========
 
+// Fetches the directory the shell is run from and returns it
 Directory *initDir(){
     //Init directory info with the current working directory
     Directory* retval = malloc(sizeof(Directory));
@@ -84,6 +113,9 @@ Directory *initDir(){
     return retval;
 }
 
+// Allocates space for the command history. If readFromFile == 1 then will read
+// from the associated history.txt file if it exists. Used to clear the history
+// re-allocating empty space.
 void initHistory(int readFromFile){
     commandHistory = malloc(sizeof(commandHistory));
     commandHistory->size = 0;
@@ -97,6 +129,7 @@ void initHistory(int readFromFile){
     ptr = fopen("history.txt", "r");
 
     if(ptr != NULL){
+        // while true loop to read the entire file
         while(1){
             Command *pcommand = malloc(sizeof(Command));
             
@@ -122,6 +155,7 @@ void initHistory(int readFromFile){
     return;
 }
 
+// Gets the command and parameters from stdin and returns them as a string
 char *getCommands(){
 
     // Convert buffersize to size_t
@@ -131,14 +165,13 @@ char *getCommands(){
     char* line = malloc(BUFFERSIZE * sizeof(char));
     getline(&line, &len, stdin);
     line[strcspn(line, "\n")] = 0;
-    //TODO: parse commands with multiple parameters
 
-    
     return line;
 
 }
 
-// Tokenize command
+// Parses input command into the command name and an array of the parameters.
+// Returns a Command
 Command *parseCommand(char* command){
 
     // Init struct to hold command
@@ -244,6 +277,7 @@ void history(Command *pcommand){
     int params = pcommand->numOfParameters;
 
     if(params != 0 && strcmp(pcommand->parameters[0], "-c") == 0){
+        // Free the old history data and replace with a blank copy
         free(commandHistory->commands);
         free(commandHistory);
         initHistory(0);
@@ -252,6 +286,7 @@ void history(Command *pcommand){
         int size = commandHistory->size;
         for(int i = size - 1; i >= 0; i--){
             Command pcommand = commandHistory->commands[i];
+            
             printf("[%d]: %s ", size - i - 1, pcommand.command);
             for(int i = 0; i < pcommand.numOfParameters; i++){
                 printf("%s ", pcommand.parameters[i]);
@@ -272,6 +307,7 @@ void byebye(){
     int size = commandHistory->size;
     for(int i = 0; i < size - 1; i++){
         Command pcommand = commandHistory->commands[i];
+        
         fprintf(ptr, "%s ", pcommand.command);
         for(int i = 0; i < pcommand.numOfParameters; i++){
             fprintf(ptr, "%s ", pcommand.parameters[i]);
@@ -287,7 +323,8 @@ void byebye(){
 // is the most recent call)
 void replay(Command *pcommand){
     
-    int commandNumber = (int) strtol(pcommand->parameters[0], (char **)NULL, 10);
+    char* strNumber = pcommand->parameters[0];
+    int commandNumber = (int) strtol(strNumber, (char **)NULL, 10);
     
     if(commandNumber > commandHistory->size){
         printf("Cannot replay a future command.\n");
