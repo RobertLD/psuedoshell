@@ -4,6 +4,7 @@ TODO:
 check for fake dirs in movetodir
 make repeat
 pass parameters in for the start command
+handle relative paths in start
 
 */
 
@@ -13,6 +14,8 @@ pass parameters in for the start command
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <dirent.h>
+#include <errno.h>
 
 //constant variables
 #define BUFFERSIZE 2000
@@ -270,11 +273,19 @@ commandType setType(char* command){
 // raises an error
 void movetodir(Command *pcommand){
 
-    dirinfo->currentDirectory = pcommand->parameters[0];
+    char* newDirectory = pcommand->parameters[0];
+    DIR* dir = opendir(newDirectory);
 
-    if(DEBUGMODE){
-        printf("Changed to: %s\n", dirinfo->currentDirectory);
+    if(dir != NULL){
+        closedir(dir);
+        dirinfo->currentDirectory = newDirectory;
 
+        if(DEBUGMODE){
+            printf("Changed to: %s\n", dirinfo->currentDirectory);
+        }
+    }
+    else if (ENOENT == errno){
+        printf("This directory does not exist\n");
     }
     return;
 }
@@ -309,7 +320,8 @@ void history(Command *pcommand){
     }
 }
 
-// Closes the shell and saves the current history to an external file
+// Closes the shell and saves the current history to an external file. Byebye is
+// not saved to the history
 void byebye(){
 
     FILE *ptr;
