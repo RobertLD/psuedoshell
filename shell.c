@@ -1,7 +1,6 @@
 /*
 TODO:
 
-check for fake dirs in movetodir
 make repeat
 pass parameters in for the start command
 handle relative paths in start
@@ -24,20 +23,6 @@ handle relative paths in start
 
 //Shell Flags
 #define DEBUGMODE 1
-
-typedef enum commandType {
-    typemovetodir = 0,
-    typewhereami,
-    typehistory,
-    typebyebye,
-    typereplay,
-    typestart,
-    typebackground,
-    typedalek,
-    typerepeat,
-    typedalekall
-
-} commandType;
 
 
 
@@ -62,13 +47,14 @@ typedef struct Processes{
     pid_t size;
 } Proceses;
 
+
+
 //function prototypes
 Directory *initDir();
 void initHistory(int readFromFile);
 char *getCommands(); // Grab commands from standard output and parse them
 Command *parseCommand(); // Grab line, tokenize
 void executeCommand(Command *pcommand);
-commandType setType(char* command);
 void movetodir(Command *pcommand);
 void whereami();
 void history(Command *pcommand);
@@ -189,84 +175,40 @@ Command *parseCommand(char* command){
 
 // Executes the command selected by the user
 void executeCommand(Command *pcommand){
-    enum commandType type = setType(pcommand->command);
+    char* command = pcommand->command;
 
-    switch (type) {
-        case typemovetodir:
-            movetodir(pcommand);
-            break;
-        case typewhereami:
-            whereami();
-            break;
-        case typehistory:
-            history(pcommand);
-            break;
-        case typebyebye:
-            byebye();
-            break;
-        case typereplay:
-            replay(pcommand);
-            break;
-        case typestart:
-            start(pcommand);
-            break;
-        case typebackground:
-            background(pcommand);
-            break;
-        case typedalek:
-            dalek(pcommand);
-            break;
-        case typerepeat:
-            repeat(pcommand);
-            break;
-        case typedalekall:
-            dalekall();
-            break;
-        default:
-            printf("This command is not a legal command!\n");
-            break;
-        return;
-    }
-}
-
-
-
-commandType setType(char* command){
     if(strcmp(command, "movetodir") == 0){
-        return typemovetodir;
+        movetodir(pcommand);
     } 
     else if(strcmp(command, "whereami") == 0){
-        
-        return typewhereami;
+        whereami();
     }
     else if(strcmp(command, "history") == 0){
-        return typehistory;
+        history(pcommand);
     }
     else if(strcmp(command, "byebye") == 0){
-        return typebyebye;
+        byebye();
     }
     else if(strcmp(command, "replay") == 0){
-        return typereplay;
+        replay(pcommand);
     }
     else if(strcmp(command, "start") == 0){
-        return typestart;
+        start(pcommand);
     }
     else if(strcmp(command, "background") == 0){
-        return typebackground;
+        background(pcommand);
     }
     else if(strcmp(command, "dalek") == 0){
-        return typedalek;
+        dalek(pcommand);
     }
     else if(strcmp(command, "repeat") == 0){
-        return typerepeat;
+        repeat(pcommand);
     }
     else if(strcmp(command, "dalekall") == 0){
-        return typedalekall;
+        dalekall();
     } else {
-        return -1;
+        printf("This command is not a legal command!\n");
     }
-
-
 }
 
 // Changes the current directory to the given directory if it exists, else it 
