@@ -487,7 +487,7 @@ void dalek(Command *pcommand){
 }
 
 // Runs the given program with the given parameters n times and prints the PIDs 
-// of the processes
+// of the processes 
 void repeat(Command *pcommand){
     
     if(pcommand->parameters[0] == NULL){
