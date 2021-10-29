@@ -204,6 +204,9 @@ Command *parseCommand(char* command){
 
     //Grab first token | Command
     char *token = strtok(command, " ");
+    if(token == NULL){
+        return pcommand;
+    }
     strcpy(pcommand->command, token);
 
     //iterator
@@ -265,6 +268,8 @@ void executeCommand(Command *pcommand){
         dalekall();
     }else if(strcmp(command, "banana") == 0){
         banana();
+    }else if(pcommand->command[0] == 0){
+        printf("Enter a command\n");
     }
      else {
         printf("This command is not a legal command!\n");
@@ -348,6 +353,7 @@ void history(Command *pcommand){
         // Free the old history data and replace with a blank copy
         free(commandHistory->commands);
         free(commandHistory);
+        printf("History cleared\n");
         initHistory(0);
     }
     else{
@@ -615,10 +621,11 @@ void dalekall(){
 
 // Helper function that adds a given command to a list of commands
 void addtohistory(Command *pcommand){
-    commandHistory->commands[commandHistory->size] = *pcommand;
-    commandHistory->size++;
-    return;
-
+    if(pcommand->command[0] != 0){
+        commandHistory->commands[commandHistory->size] = *pcommand;
+        commandHistory->size++;
+        return;
+    }
 }
 
 // Banana, yo
