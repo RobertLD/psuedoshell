@@ -79,7 +79,7 @@ void replay(Command *pcommand);
 
 void start(Command *pcommand);
 
-void background(Command *pcommand);
+int background(Command *pcommand);
 
 void dalek(Command *pcommand);
 
@@ -348,7 +348,16 @@ void start(Command *pcommand){
     pid_t pid = fork();
     activeProcesses->processPIDS[activeProcesses->size++] = pid;
     //construct command string
-    char *cmdString[] = {program, NULL};
+    char *cmdString[MAXTOKENS];
+    for(int i = 0; i < MAXTOKENS; i++){
+        cmdString[i] = malloc(BUFFERSIZE * sizeof(char));
+    }
+    int numParams = pcommand->numOfParameters;
+    for(int i = 0; i < numParams; i++){
+        strcpy(cmdString[i], pcommand->parameters[i]);
+    }
+    cmdString[numParams] = NULL;
+
     if(pid == -1) {
         printf("Error starting process.\n");
     } else if(pid > 0){
@@ -361,15 +370,27 @@ void start(Command *pcommand){
         execv(program, cmdString);
     }
     
+    for(int i = 0; i < MAXTOKENS; i++){
+        free(cmdString[i]);
+    }
+
     return;
 }
 
 // Runs a given program with the parameters passed, but in the background. 
 // Prints the PID of the processes that was created
-void background(Command *pcommand){
+int background(Command *pcommand){
     char program[BUFFERSIZE];
     strcpy(program, pcommand->parameters[0]);
-    char *cmdString[] = {program, NULL};
+    char *cmdString[MAXTOKENS];
+    for(int i = 0; i < MAXTOKENS; i++){
+        cmdString[i] = malloc(BUFFERSIZE * sizeof(char));
+    }
+    int numParams = pcommand->numOfParameters;
+    for(int i = 0; i < numParams; i++){
+        strcpy(cmdString[i], pcommand->parameters[i]);
+    }
+    cmdString[numParams] = NULL;
     pid_t parent = getpid();
     pid_t child = fork();
 
@@ -381,7 +402,11 @@ void background(Command *pcommand){
     activeProcesses->processPIDS[activeProcesses->size++] = child;
     printf("&[%d]\n", child);
 
-    return;
+    for(int i = 0; i < MAXTOKENS; i++){
+        free(cmdString[i]);
+    }
+
+    return (int)child;
 }
 
 // Terminates the process with the given PID
@@ -395,6 +420,34 @@ void dalek(Command *pcommand){
 // Runs the given program with the given parameters n times and prints the PIDs 
 // of the processes
 void repeat(Command *pcommand){
+    
+    if(pcommand->parameters[0] == NULL){
+        printf("Specify number of times to repeat\n");
+    }
+
+    char* strNumber = pcommand->parameters[0];
+    int repeatnum = (int) strtol(strNumber, (char **)NULL, 10);
+    
+    if(pcommand->parameters[1] == NULL){
+        printf("Specify which command to repeat\n");
+    }
+    
+    int numparams = pcommand->numOfParameters;
+
+    Command *newcommand = malloc(sizeof(Command));
+    newcommand->command = malloc(BUFFERSIZE * sizeof(char));
+    strcpy(newcommand->command, pcommand->command);
+    newcommand->numOfParameters = numparams - 1;
+    newcommand->parameters = malloc(sizeof(char*) * MAXTOKENS);
+
+    for(int i = 0; i < numparams - 1; i++){
+        newcommand->parameters[i] = pcommand->parameters[i+1];
+    }
+
+    for(int i = 0; i < repeatnum; i++){
+        background(newcommand);
+    }
+    
     return;
 }
 
