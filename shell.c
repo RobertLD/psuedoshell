@@ -3,12 +3,6 @@ Dr. Hensel COP4600 Assignment 2
 Co-Authored by Robert DeRienzo and David Hranicky
 */
 
-/*
-TODO:
-
-handle relative paths in start
-
-*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -333,7 +327,7 @@ void movetodir(Command *pcommand){
     return;
 }
 
-// Written by RObert
+// Written by Robert
 
 // Prints the current directory
 void whereami(){
@@ -628,7 +622,7 @@ void addtohistory(Command *pcommand){
     }
 }
 
-// Banana, yo
+// Written by Robert ;)
 
 void banana(){
 
