@@ -382,6 +382,7 @@ void replay(Command *pcommand){
 
     char* strNumber = pcommand->parameters[0];
     int commandNumber = (int) strtol(strNumber, (char **)NULL, 10);
+    commandNumber = commandHistory->size - 2 - commandNumber;
     
     if(commandNumber > commandHistory->size){
         printf("Cannot replay a future command.\n");
