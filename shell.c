@@ -22,7 +22,7 @@ handle relative paths in start
 #define MAXHISTORYSIZE 10000
 
 //Shell Flags
-#define DEBUGMODE 1
+#define DEBUGMODE 0
 
 // ======================
 // Data struct definition
@@ -117,7 +117,7 @@ Directory *initDir(){
 // from the associated history.txt file if it exists. Used to clear the history
 // re-allocating empty space.
 void initHistory(int readFromFile){
-    commandHistory = malloc(sizeof(commandHistory));
+    commandHistory = malloc(sizeof(History) * 1);
     commandHistory->size = 0;
     commandHistory->commands = malloc(sizeof(Command) * MAXHISTORYSIZE);
 
@@ -351,6 +351,20 @@ void byebye(){
         fprintf(ptr, "\n");
     }
     fclose(ptr);
+
+    //Free global variables
+    //Free dirinfo
+    free(dirinfo);
+
+    //Free commandHistory
+    
+    
+    
+    free(commandHistory);
+    
+    // Free active processes
+    free(activeProcesses);
+
     exit(0);
     return;
 }
@@ -474,7 +488,7 @@ int main(int argc, char **argv){
     // Initilize shell program
     dirinfo = initDir();
     initHistory(1);
-    activeProcesses = malloc(sizeof(activeProcesses));
+    activeProcesses = malloc(sizeof(Processes));
     //Variables
     char *command;
     

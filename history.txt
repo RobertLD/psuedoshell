@@ -1,3 +1,0 @@
-background HELLO 
-dalek 1942 
-history 
