@@ -79,7 +79,7 @@ void replay(Command *pcommand);
 
 void start(Command *pcommand);
 
-int background(Command *pcommand);
+void background(Command *pcommand);
 
 void dalek(Command *pcommand);
 
@@ -436,7 +436,7 @@ void start(Command *pcommand){
 
 // Runs a given program with the parameters passed, but in the background. 
 // Prints the PID of the processes that was created
-int background(Command *pcommand){
+void background(Command *pcommand){
     char program[BUFFERSIZE];
 
     // Do nothing when told to do nothing
@@ -467,7 +467,7 @@ int background(Command *pcommand){
         free(cmdString[i]);
     }
 
-    return (int)child;
+    return;
 }
 
 // Terminates the process with the given PID
@@ -519,7 +519,7 @@ void repeat(Command *pcommand){
 // the killed processes
 void dalekall(){
     for(int i = 0; i < activeProcesses->size; i++){
-        printf("Killing PID: %d", activeProcesses->processPIDS[i]);
+        printf("Killing PID: %d\n", activeProcesses->processPIDS[i]);
         kill(activeProcesses->processPIDS[i], SIGKILL);
     }
     return;
