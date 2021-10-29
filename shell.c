@@ -22,7 +22,7 @@ handle relative paths in start
 #define MAXHISTORYSIZE 10000
 
 //Shell Flags
-#define DEBUGMODE 1
+#define DEBUGMODE 0
 
 // ======================
 // Data struct definition
@@ -117,7 +117,7 @@ Directory *initDir(){
 // from the associated history.txt file if it exists. Used to clear the history
 // re-allocating empty space.
 void initHistory(int readFromFile){
-    commandHistory = malloc(sizeof(commandHistory));
+    commandHistory = malloc(sizeof(History) * 1);
     commandHistory->size = 0;
     commandHistory->commands = malloc(sizeof(Command) * MAXHISTORYSIZE);
 
@@ -248,13 +248,49 @@ void executeCommand(Command *pcommand){
 // raises an error
 void movetodir(Command *pcommand){
 
+    // Do nothing when told to do nothing
+    if(pcommand->numOfParameters == 0) return;
     char* newDirectory = pcommand->parameters[0];
+
+
+  
+    
+    
+    if(strcmp(newDirectory, "..") == 0){
+        // If we enter the directory as '..' we will go back one directory
+        // Effectivly we find the pointer to the last slash in the directory string
+        // and set it to the termination character.
+        char *last_slash = strrchr(dirinfo->currentDirectory, '/');
+
+        // Couldn't go back
+        if(last_slash == NULL) {
+            printf("Could not desend directory tree.\n");
+        }
+
+        *last_slash ='\0';
+        return;
+    }
     DIR* dir = opendir(newDirectory);
+
+    //Are we moving to an absolute path?
+    if(pcommand->parameters[0][0] == '/'){
+        if(dir != NULL){
+            strcpy(dirinfo->currentDirectory, newDirectory);    
+            if(DEBUGMODE){
+                printf("Changed to: %s\n", dirinfo->currentDirectory);
+            }
+        } else if (ENOENT == errno){
+        printf("This directory does not exist\n");
+    }
+    return;       
+    }
+    
 
     if(dir != NULL){
         closedir(dir);
-        dirinfo->currentDirectory = newDirectory;
-
+        //dirinfo->currentDirectory = newDirectory;
+        strcat(dirinfo->currentDirectory, "/");
+        strcat(dirinfo->currentDirectory, newDirectory);
         if(DEBUGMODE){
             printf("Changed to: %s\n", dirinfo->currentDirectory);
         }
@@ -315,6 +351,20 @@ void byebye(){
         fprintf(ptr, "\n");
     }
     fclose(ptr);
+
+    //Free global variables
+    //Free dirinfo
+    free(dirinfo);
+
+    //Free commandHistory
+    
+    
+    
+    free(commandHistory);
+    
+    // Free active processes
+    free(activeProcesses);
+
     exit(0);
     return;
 }
@@ -322,7 +372,10 @@ void byebye(){
 // Replays the given command referenced in the order that they are printed (0 
 // is the most recent call)
 void replay(Command *pcommand){
-    
+
+    // Do nothing when told to do nothing
+    if(pcommand->numOfParameters == 0) return;
+
     char* strNumber = pcommand->parameters[0];
     int commandNumber = (int) strtol(strNumber, (char **)NULL, 10);
     
@@ -341,6 +394,10 @@ void replay(Command *pcommand){
 // Runs the given program with the parameters passed to it
 void start(Command *pcommand){
     char program[BUFFERSIZE];
+
+    // Do nothing when told to do nothing
+    if(pcommand->numOfParameters == 0) return;
+
     strcpy(program, pcommand->parameters[0]);
 
     //pids
@@ -381,6 +438,10 @@ void start(Command *pcommand){
 // Prints the PID of the processes that was created
 int background(Command *pcommand){
     char program[BUFFERSIZE];
+
+    // Do nothing when told to do nothing
+    if(pcommand->numOfParameters == 0) return;
+
     strcpy(program, pcommand->parameters[0]);
     char *cmdString[MAXTOKENS];
     for(int i = 0; i < MAXTOKENS; i++){
@@ -411,6 +472,9 @@ int background(Command *pcommand){
 
 // Terminates the process with the given PID
 void dalek(Command *pcommand){
+    // Do nothing when told to do nothing
+    if(pcommand->numOfParameters == 0) return;
+
     int pid = strtol(pcommand->parameters[0], (char **)NULL, 10);
     printf("Killing [%d]\n", pid);
     kill(pid, SIGKILL);
@@ -454,9 +518,8 @@ void repeat(Command *pcommand){
 // Kills all processes that were created by the shell and prints the PIDs of 
 // the killed processes
 void dalekall(){
-    for(int i = 0; i <= activeProcesses->size; i++){
-        if(i == 0) i++;
-        printf("Killing PID: %d", i);
+    for(int i = 0; i < activeProcesses->size; i++){
+        printf("Killing PID: %d", activeProcesses->processPIDS[i]);
         kill(activeProcesses->processPIDS[i], SIGKILL);
     }
     return;
@@ -478,7 +541,7 @@ int main(int argc, char **argv){
     // Initilize shell program
     dirinfo = initDir();
     initHistory(1);
-    activeProcesses = malloc(sizeof(activeProcesses));
+    activeProcesses = malloc(sizeof(Processes));
     //Variables
     char *command;
     
