@@ -250,8 +250,12 @@ void movetodir(Command *pcommand){
 
     // Do nothing when told to do nothing
     if(pcommand->numOfParameters == 0) return;
-
     char* newDirectory = pcommand->parameters[0];
+
+
+  
+    
+    
     if(strcmp(newDirectory, "..") == 0){
         // If we enter the directory as '..' we will go back one directory
         // Effectivly we find the pointer to the last slash in the directory string
@@ -267,6 +271,20 @@ void movetodir(Command *pcommand){
         return;
     }
     DIR* dir = opendir(newDirectory);
+
+    //Are we moving to an absolute path?
+    if(pcommand->parameters[0][0] == '/'){
+        if(dir != NULL){
+            strcpy(dirinfo->currentDirectory, newDirectory);    
+            if(DEBUGMODE){
+                printf("Changed to: %s\n", dirinfo->currentDirectory);
+            }
+        } else if (ENOENT == errno){
+        printf("This directory does not exist\n");
+    }
+    return;       
+    }
+    
 
     if(dir != NULL){
         closedir(dir);
@@ -417,7 +435,7 @@ void background(Command *pcommand){
 void dalek(Command *pcommand){
     // Do nothing when told to do nothing
     if(pcommand->numOfParameters == 0) return;
-    
+
     int pid = strtol(pcommand->parameters[0], (char **)NULL, 10);
     printf("Killing [%d]\n", pid);
     kill(pid, SIGKILL);
@@ -433,9 +451,8 @@ void repeat(Command *pcommand){
 // Kills all processes that were created by the shell and prints the PIDs of 
 // the killed processes
 void dalekall(){
-    for(int i = 0; i <= activeProcesses->size; i++){
-        if(i == 0) i++;
-        printf("Killing PID: %d", i);
+    for(int i = 0; i < activeProcesses->size; i++){
+        printf("Killing PID: %d", activeProcesses->processPIDS[i]);
         kill(activeProcesses->processPIDS[i], SIGKILL);
     }
     return;
