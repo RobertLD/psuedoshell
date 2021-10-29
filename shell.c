@@ -1,8 +1,12 @@
 /*
+Dr. Hensel COP4600 Assignment 2
+Co-Authored by Robert DeRienzo and David Hranicky
+*/
+
+/*
 TODO:
 
 handle relative paths in start
-fix indexes for replay
 
 */
 
@@ -88,7 +92,7 @@ void dalekall();
 
 void addtohistory(Command *pcommand);
 
-void banana();
+void banana(); // Banana, yo
 
 // =======================
 // Global access variables
@@ -103,6 +107,8 @@ Processes *activeProcesses;
 // Functions
 // =========
 
+// Written by Robert
+
 // Fetches the directory the shell is run from and returns it
 Directory *initDir(){
     //Init directory info with the current working directory
@@ -114,14 +120,20 @@ Directory *initDir(){
     return retval;
 }
 
+// First draft by Robert, only created a blank history
+// File input functionality written by David
+
 // Allocates space for the command history. If readFromFile == 1 then will read
 // from the associated history.txt file if it exists. Used to clear the history
 // re-allocating empty space.
 void initHistory(int readFromFile){
+    // Alloc space for history
     commandHistory = malloc(sizeof(History) * 1);
     commandHistory->size = 0;
     commandHistory->commands = malloc(sizeof(Command) * MAXHISTORYSIZE);
 
+    // Checks if the command should read from the stored file. If not, history 
+    // is now blank, effectively erasing it
     if(!readFromFile){
         return;
     }
@@ -129,6 +141,7 @@ void initHistory(int readFromFile){
     FILE *ptr;
     ptr = fopen("history.txt", "r");
 
+    // Read from file if it exists
     if(ptr != NULL){
         // while true loop to read the entire file
         while(1){
@@ -136,17 +149,21 @@ void initHistory(int readFromFile){
             
             size_t len = BUFFERSIZE;
 
+            // Read in each line of the file
             char* line = malloc(BUFFERSIZE * sizeof(char));
             getline(&line, &len, ptr);
 
+            // Stop reading at end of file
             if(feof(ptr)){
                 break;
             }
 
             line[strcspn(line, "\n")] = 0;
 
+            // Parse the command
             pcommand = parseCommand(line);
 
+            // Add command to history
             addtohistory(pcommand);
         }
         fclose(ptr);
@@ -155,6 +172,8 @@ void initHistory(int readFromFile){
 
     return;
 }
+
+// Written by Robert
 
 // Gets the command and parameters from stdin and returns them as a string
 char *getCommands(){
@@ -170,6 +189,8 @@ char *getCommands(){
     return line;
 
 }
+
+// Written by Robert
 
 // Parses input command into the command name and an array of the parameters.
 // Returns a Command
@@ -206,6 +227,8 @@ Command *parseCommand(char* command){
     return pcommand;
 
 }
+
+// Written by both Robert and David, split evenly
 
 // Executes the command selected by the user
 void executeCommand(Command *pcommand){
@@ -248,6 +271,10 @@ void executeCommand(Command *pcommand){
     }
 }
 
+// First draft by Robert, just updated current directory variable
+// Handling for non-existing directories written by David
+// Handling for Relative paths written by Robert
+
 // Changes the current directory to the given directory if it exists, else it 
 // raises an error
 void movetodir(Command *pcommand){
@@ -255,15 +282,11 @@ void movetodir(Command *pcommand){
     // Do nothing when told to do nothing
     if(pcommand->numOfParameters == 0) return;
     char* newDirectory = pcommand->parameters[0];
-
-
-  
-    
     
     if(strcmp(newDirectory, "..") == 0){
         // If we enter the directory as '..' we will go back one directory
-        // Effectivly we find the pointer to the last slash in the directory string
-        // and set it to the termination character.
+        // Effectivly we find the pointer to the last slash in the directory
+        // string and set it to the termination character.
         char *last_slash = strrchr(dirinfo->currentDirectory, '/');
 
         // Couldn't go back
@@ -305,11 +328,16 @@ void movetodir(Command *pcommand){
     return;
 }
 
+// Written by RObert
+
 // Prints the current directory
 void whereami(){
     printf("%s\n", dirinfo->currentDirectory);
     return;
 }
+
+// First draft written by Robert, only printed command history
+// -c flag and printing parameters written by David
 
 // Prints the history in reverse order (newest first). If "-c" is passed as a 
 // parameter, then the history is cleared
@@ -323,6 +351,8 @@ void history(Command *pcommand){
         initHistory(0);
     }
     else{
+        // Loop through commandHistory backwards (stored FCFS, oldest is first)
+        // and print the command along with the parameters
         int size = commandHistory->size;
         for(int i = size - 1; i >= 0; i--){
             Command pcommand = commandHistory->commands[i];
@@ -337,6 +367,10 @@ void history(Command *pcommand){
     }
 }
 
+// First draft written by Robert, just called exit
+// File output written by David
+// Memory management written by Robert
+
 // Closes the shell and saves the current history to an external file. Byebye is
 // not saved to the history
 void byebye(){
@@ -344,6 +378,9 @@ void byebye(){
     FILE *ptr;
     ptr = fopen("history.txt", "w");
     
+    // Write command history as it is stored in the program to an external file.
+    // This simplifies reading from the file as it is a direct mirror of the
+    // internal state of the history
     int size = commandHistory->size;
     for(int i = 0; i < size - 1; i++){
         Command pcommand = commandHistory->commands[i];
@@ -361,9 +398,6 @@ void byebye(){
     free(dirinfo);
 
     //Free commandHistory
-    
-    
-    
     free(commandHistory);
     
     // Free active processes
@@ -373,6 +407,8 @@ void byebye(){
     return;
 }
 
+// Written by Robert
+
 // Replays the given command referenced in the order that they are printed (0 
 // is the most recent call)
 void replay(Command *pcommand){
@@ -380,21 +416,31 @@ void replay(Command *pcommand){
     // Do nothing when told to do nothing
     if(pcommand->numOfParameters == 0) return;
 
+    // Retrieve the number passed, change indexing to match how history is
+    // printed
     char* strNumber = pcommand->parameters[0];
     int commandNumber = (int) strtol(strNumber, (char **)NULL, 10);
+    // size - 2 because this gets executed after replay is added to the
+    // history, so the size is one larger than the state of the history when 
+    // replay was called.
     commandNumber = commandHistory->size - 2 - commandNumber;
     
     if(commandNumber > commandHistory->size){
         printf("Cannot replay a future command.\n");
     } else if(commandNumber < 0) printf("Invalid replay index.\n");
 
-    printf("I am in replay and my command to rerun is: %d\n", commandNumber);
-    printf("The command is %s\n", commandHistory->commands[commandNumber].command);
+    if(DEBUGMODE){
+        printf("I am in replay, my command to rerun is: %d\n", commandNumber);
+        printf("The command is %s\n", commandHistory->commands[commandNumber].command);
+    }
 
     // Passing the pcommand
     executeCommand(&commandHistory->commands[commandNumber]);
     return;
 }
+
+// First draft written by Robert, did not handle parameters
+// Parameter handling written by David
 
 // Runs the given program with the parameters passed to it
 void start(Command *pcommand){
@@ -409,35 +455,47 @@ void start(Command *pcommand){
     pid_t parent = getpid();
     pid_t pid = fork();
     activeProcesses->processPIDS[activeProcesses->size++] = pid;
+
     //construct command string
     char *cmdString[MAXTOKENS];
+
+    // Initialize space for the command string
     for(int i = 0; i < MAXTOKENS; i++){
         cmdString[i] = malloc(BUFFERSIZE * sizeof(char));
     }
+
+    // Copy the parameters into the command string
     int numParams = pcommand->numOfParameters;
     for(int i = 0; i < numParams; i++){
         strcpy(cmdString[i], pcommand->parameters[i]);
     }
+
+    // Null terminate so execv doesn't scream
     cmdString[numParams] = NULL;
 
+    // -1 if something went wrong
     if(pid == -1) {
         printf("Error starting process.\n");
-    } else if(pid > 0){
+    } else if(pid > 0){ // what the parent does
         int status;
         waitpid(pid, &status, 0);
-    } else {
+    } else { // what the child does
         if(DEBUGMODE){
             printf("Starting... %s\n", program);
         }
         execv(program, cmdString);
     }
     
+    // Free command string
     for(int i = 0; i < MAXTOKENS; i++){
         free(cmdString[i]);
     }
 
     return;
 }
+
+// Same deal as start, initially written by Robert, parameter handling written
+// by David
 
 // Runs a given program with the parameters passed, but in the background. 
 // Prints the PID of the processes that was created
@@ -448,15 +506,24 @@ void background(Command *pcommand){
     if(pcommand->numOfParameters == 0) return;
 
     strcpy(program, pcommand->parameters[0]);
+
     char *cmdString[MAXTOKENS];
+
+    // Initialize space for the command string
     for(int i = 0; i < MAXTOKENS; i++){
         cmdString[i] = malloc(BUFFERSIZE * sizeof(char));
     }
+
+    // Copy the parameters into the command string
     int numParams = pcommand->numOfParameters;
     for(int i = 0; i < numParams; i++){
         strcpy(cmdString[i], pcommand->parameters[i]);
     }
+
+    // Null terminate so execv doesn't scream
     cmdString[numParams] = NULL;
+
+    // pids
     pid_t parent = getpid();
     pid_t child = fork();
 
@@ -468,12 +535,15 @@ void background(Command *pcommand){
     activeProcesses->processPIDS[activeProcesses->size++] = child;
     printf("&[%d]\n", child);
 
+    // Free command string
     for(int i = 0; i < MAXTOKENS; i++){
         free(cmdString[i]);
     }
 
     return;
 }
+
+// Written by Robert
 
 // Terminates the process with the given PID
 void dalek(Command *pcommand){
@@ -486,39 +556,50 @@ void dalek(Command *pcommand){
     return;
 }
 
+// Written by David
+
 // Runs the given program with the given parameters n times and prints the PIDs 
 // of the processes
 void repeat(Command *pcommand){
-    
+    // Check for nnumber of repeats
     if(pcommand->parameters[0] == NULL){
         printf("Specify number of times to repeat\n");
     }
 
+    // Get number of repeats
     char* strNumber = pcommand->parameters[0];
     int repeatnum = (int) strtol(strNumber, (char **)NULL, 10);
     
+    // Check for command to repeat
     if(pcommand->parameters[1] == NULL){
         printf("Specify which command to repeat\n");
     }
     
     int numparams = pcommand->numOfParameters;
 
+    // Create a new command to be passed into background. The heavy lifting is
+    // done there, so just call that n times.
     Command *newcommand = malloc(sizeof(Command));
     newcommand->command = malloc(BUFFERSIZE * sizeof(char));
     strcpy(newcommand->command, pcommand->command);
-    newcommand->numOfParameters = numparams - 1;
+    newcommand->numOfParameters = numparams - 1; // doesn't have n as a param
     newcommand->parameters = malloc(sizeof(char*) * MAXTOKENS);
 
+    // Assign the ith newcommand param to the i+1th pcommand param as the 0th 
+    // pcommand param is always n
     for(int i = 0; i < numparams - 1; i++){
         newcommand->parameters[i] = pcommand->parameters[i+1];
     }
 
+    // Call background n times
     for(int i = 0; i < repeatnum; i++){
         background(newcommand);
     }
     
     return;
 }
+
+// Written by Robert
 
 // Kills all processes that were created by the shell and prints the PIDs of 
 // the killed processes
@@ -530,6 +611,8 @@ void dalekall(){
     return;
 }
 
+// Written by Robert
+
 // Helper function that adds a given command to a list of commands
 void addtohistory(Command *pcommand){
     commandHistory->commands[commandHistory->size] = *pcommand;
@@ -538,13 +621,15 @@ void addtohistory(Command *pcommand){
 
 }
 
+// Banana, yo
+
 void banana(){
 
     puts(" _\n//\\\nV  \\\n \\  \\_\n  \\,\'.`-.\n   |\\ `. `.       \n   ( \\  `. `-.                        _,.-:\\\n    \\ \\   `.  `-._             __..--\' ,-\';/\n     \\ `.   `-.   `-..___..---\'   _.--\' ,\'/\n      `. `.    `-._        __..--\'    ,\' /\n        `. `-_     ``--..\'\'       _.-\' ,\'\n          `-_ `-.___        __,--\'   ,\'\n             `-.__  `----\"\"\"    __.-\'\n                  `--..____..--\'");
 }
 
 
-
+// Written by Robert
 
 int main(int argc, char **argv){
 
@@ -558,7 +643,7 @@ int main(int argc, char **argv){
     //Shell loop
     while(1){
         fflush(stdout);
-        printf("# ");
+        printf("\n# ");
         fflush(stdout);
         
         Command *pcommand = malloc(sizeof(command));
