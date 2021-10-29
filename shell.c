@@ -1,7 +1,9 @@
 /*
 TODO:
 
-check for fake dirs in movetodir
+make repeat
+pass parameters in for the start command
+handle relative paths in start
 
 */
 
@@ -11,6 +13,8 @@ check for fake dirs in movetodir
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <dirent.h>
+#include <errno.h>
 
 //constant variables
 #define BUFFERSIZE 2000
@@ -20,69 +24,85 @@ check for fake dirs in movetodir
 //Shell Flags
 #define DEBUGMODE 1
 
-typedef enum commandType {
-    typemovetodir = 0,
-    typewhereami,
-    typehistory,
-    typebyebye,
-    typereplay,
-    typestart,
-    typebackground,
-    typedalek,
-    typerepeat,
-    typedalekall
-
-} commandType;
-
-
+// ======================
+// Data struct definition
+// ======================
 
 // Holds directory information
 typedef struct Directory{
     char* currentDirectory;
 } Directory; 
 
+// Holds the command name, number of parameters, and an array of the parameters
 typedef struct Command{
     char* command;
     int numOfParameters;
     char** parameters;
 } Command; 
 
+// Holds an array containing the history
 typedef struct History{
     Command *commands;
     int size;
 } History; 
 
+// Holds the active processes
 typedef struct Processes{
     int processPIDS[BUFFERSIZE];
     pid_t size;
-} Proceses;
+} Processes;
 
-//function prototypes
+
+// ===================
+// Function prototypes
+// ===================
+
 Directory *initDir();
+ 
 void initHistory(int readFromFile);
+
 char *getCommands(); // Grab commands from standard output and parse them
+
 Command *parseCommand(); // Grab line, tokenize
+
 void executeCommand(Command *pcommand);
-commandType setType(char* command);
+
 void movetodir(Command *pcommand);
+
 void whereami();
+
 void history(Command *pcommand);
+
 void byebye();
+
 void replay(Command *pcommand);
+
 void start(Command *pcommand);
+
 void background(Command *pcommand);
+
 void dalek(Command *pcommand);
+
 void repeat(Command *pcommand);
+
 void dalekall();
+
 void addtohistory(Command *pcommand);
 
+// =======================
 // Global access variables
+// =======================
+
 Directory *dirinfo; //init current directory
 History *commandHistory;
-Proceses *activeProcesses;
+Processes *activeProcesses;
     
 
+// =========
+// Functions
+// =========
 
+// Fetches the directory the shell is run from and returns it
 Directory *initDir(){
     //Init directory info with the current working directory
     Directory* retval = malloc(sizeof(Directory));
@@ -93,6 +113,9 @@ Directory *initDir(){
     return retval;
 }
 
+// Allocates space for the command history. If readFromFile == 1 then will read
+// from the associated history.txt file if it exists. Used to clear the history
+// re-allocating empty space.
 void initHistory(int readFromFile){
     commandHistory = malloc(sizeof(commandHistory));
     commandHistory->size = 0;
@@ -106,6 +129,7 @@ void initHistory(int readFromFile){
     ptr = fopen("history.txt", "r");
 
     if(ptr != NULL){
+        // while true loop to read the entire file
         while(1){
             Command *pcommand = malloc(sizeof(Command));
             
@@ -131,6 +155,7 @@ void initHistory(int readFromFile){
     return;
 }
 
+// Gets the command and parameters from stdin and returns them as a string
 char *getCommands(){
 
     // Convert buffersize to size_t
@@ -140,14 +165,13 @@ char *getCommands(){
     char* line = malloc(BUFFERSIZE * sizeof(char));
     getline(&line, &len, stdin);
     line[strcspn(line, "\n")] = 0;
-    //TODO: parse commands with multiple parameters
 
-    
     return line;
 
 }
 
-// Tokenize command
+// Parses input command into the command name and an array of the parameters.
+// Returns a Command
 Command *parseCommand(char* command){
 
     // Init struct to hold command
@@ -184,104 +208,76 @@ Command *parseCommand(char* command){
 
 // Executes the command selected by the user
 void executeCommand(Command *pcommand){
-    enum commandType type = setType(pcommand->command);
+    char* command = pcommand->command;
 
-    switch (type) {
-        case typemovetodir:
-            movetodir(pcommand);
-            break;
-        case typewhereami:
-            whereami();
-            break;
-        case typehistory:
-            history(pcommand);
-            break;
-        case typebyebye:
-            byebye();
-            break;
-        case typereplay:
-            replay(pcommand);
-            break;
-        case typestart:
-            start(pcommand);
-            break;
-        case typebackground:
-            background(pcommand);
-            break;
-        case typedalek:
-            dalek(pcommand);
-            break;
-        case typerepeat:
-            repeat(pcommand);
-            break;
-        case typedalekall:
-            dalekall();
-            break;
-        default:
-            printf("This command is not a legal command!\n");
-            break;
-        return;
-    }
-}
-
-
-
-commandType setType(char* command){
     if(strcmp(command, "movetodir") == 0){
-        return typemovetodir;
+        movetodir(pcommand);
     } 
     else if(strcmp(command, "whereami") == 0){
-        
-        return typewhereami;
+        whereami();
     }
     else if(strcmp(command, "history") == 0){
-        return typehistory;
+        history(pcommand);
     }
     else if(strcmp(command, "byebye") == 0){
-        return typebyebye;
+        byebye();
     }
     else if(strcmp(command, "replay") == 0){
-        return typereplay;
+        replay(pcommand);
     }
     else if(strcmp(command, "start") == 0){
-        return typestart;
+        start(pcommand);
     }
     else if(strcmp(command, "background") == 0){
-        return typebackground;
+        background(pcommand);
     }
     else if(strcmp(command, "dalek") == 0){
-        return typedalek;
+        dalek(pcommand);
     }
     else if(strcmp(command, "repeat") == 0){
-        return typerepeat;
+        repeat(pcommand);
     }
     else if(strcmp(command, "dalekall") == 0){
-        return typedalekall;
+        dalekall();
     } else {
-        return -1;
+        printf("This command is not a legal command!\n");
     }
-
-
 }
 
+// Changes the current directory to the given directory if it exists, else it 
+// raises an error
 void movetodir(Command *pcommand){
 
-    dirinfo->currentDirectory = pcommand->parameters[0];
+    char* newDirectory = pcommand->parameters[0];
+    DIR* dir = opendir(newDirectory);
 
-    if(DEBUGMODE){
-        printf("Changed to: %s\n", dirinfo->currentDirectory);
+    if(dir != NULL){
+        closedir(dir);
+        dirinfo->currentDirectory = newDirectory;
 
+        if(DEBUGMODE){
+            printf("Changed to: %s\n", dirinfo->currentDirectory);
+        }
+    }
+    else if (ENOENT == errno){
+        printf("This directory does not exist\n");
     }
     return;
 }
+
+// Prints the current directory
 void whereami(){
     printf("%s\n", dirinfo->currentDirectory);
     return;
 }
+
+// Prints the history in reverse order (newest first). If "-c" is passed as a 
+// parameter, then the history is cleared
 void history(Command *pcommand){
     int params = pcommand->numOfParameters;
 
     if(params != 0 && strcmp(pcommand->parameters[0], "-c") == 0){
+        // Free the old history data and replace with a blank copy
         free(commandHistory->commands);
         free(commandHistory);
         initHistory(0);
@@ -290,6 +286,7 @@ void history(Command *pcommand){
         int size = commandHistory->size;
         for(int i = size - 1; i >= 0; i--){
             Command pcommand = commandHistory->commands[i];
+            
             printf("[%d]: %s ", size - i - 1, pcommand.command);
             for(int i = 0; i < pcommand.numOfParameters; i++){
                 printf("%s ", pcommand.parameters[i]);
@@ -299,6 +296,9 @@ void history(Command *pcommand){
         return;
     }
 }
+
+// Closes the shell and saves the current history to an external file. Byebye is
+// not saved to the history
 void byebye(){
 
     FILE *ptr;
@@ -307,6 +307,7 @@ void byebye(){
     int size = commandHistory->size;
     for(int i = 0; i < size - 1; i++){
         Command pcommand = commandHistory->commands[i];
+        
         fprintf(ptr, "%s ", pcommand.command);
         for(int i = 0; i < pcommand.numOfParameters; i++){
             fprintf(ptr, "%s ", pcommand.parameters[i]);
@@ -317,9 +318,13 @@ void byebye(){
     exit(0);
     return;
 }
+
+// Replays the given command referenced in the order that they are printed (0 
+// is the most recent call)
 void replay(Command *pcommand){
     
-    int commandNumber = (int) strtol(pcommand->parameters[0], (char **)NULL, 10);
+    char* strNumber = pcommand->parameters[0];
+    int commandNumber = (int) strtol(strNumber, (char **)NULL, 10);
     
     if(commandNumber > commandHistory->size){
         printf("Cannot replay a future command.\n");
@@ -332,6 +337,8 @@ void replay(Command *pcommand){
     executeCommand(&commandHistory->commands[commandNumber]);
     return;
 }
+
+// Runs the given program with the parameters passed to it
 void start(Command *pcommand){
     char program[BUFFERSIZE];
     strcpy(program, pcommand->parameters[0]);
@@ -356,32 +363,9 @@ void start(Command *pcommand){
     
     return;
 }
-// void background(Command *pcommand){
-//     char program[BUFFERSIZE];
-//     strcpy(program, pcommand->parameters[0]);
 
-//     //pids
-//     pid_t parent = getpid();
-//     pid_t pid = fork();
-//     printf("Child created with pid: %d", parent);
-//     activeProcesses->processPIDS[activeProcesses->size++] = pid;
-//     //construct command string
-//     char *cmdString[] = {program, NULL};
-//     if(pid == -1) {
-//         printf("Error starting process.\n");
-//     } else if(pid > 0){
-//         printf("I am the parent of this child!\n");
-
-//     } else {
-//         if(DEBUGMODE){
-//             printf("Starting... %s\n\n", program);
-//         }
-//         setpgid(0,0);
-//         execv(program, cmdString);
-//     }
-    
-//     return;
-// }
+// Runs a given program with the parameters passed, but in the background. 
+// Prints the PID of the processes that was created
 void background(Command *pcommand){
     char program[BUFFERSIZE];
     strcpy(program, pcommand->parameters[0]);
@@ -399,15 +383,23 @@ void background(Command *pcommand){
 
     return;
 }
+
+// Terminates the process with the given PID
 void dalek(Command *pcommand){
     int pid = strtol(pcommand->parameters[0], (char **)NULL, 10);
     printf("Killing [%d]\n", pid);
     kill(pid, SIGKILL);
     return;
 }
+
+// Runs the given program with the given parameters n times and prints the PIDs 
+// of the processes
 void repeat(Command *pcommand){
     return;
 }
+
+// Kills all processes that were created by the shell and prints the PIDs of 
+// the killed processes
 void dalekall(){
     for(int i = 0; i <= activeProcesses->size; i++){
         if(i == 0) i++;
@@ -416,6 +408,8 @@ void dalekall(){
     }
     return;
 }
+
+// Helper function that adds a given command to a list of commands
 void addtohistory(Command *pcommand){
     commandHistory->commands[commandHistory->size] = *pcommand;
     commandHistory->size++;
