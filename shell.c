@@ -89,6 +89,8 @@ void dalekall();
 
 void addtohistory(Command *pcommand);
 
+void banana();
+
 // =======================
 // Global access variables
 // =======================
@@ -239,7 +241,10 @@ void executeCommand(Command *pcommand){
     }
     else if(strcmp(command, "dalekall") == 0){
         dalekall();
-    } else {
+    }else if(strcmp(command, "banana") == 0){
+        banana();
+    }
+     else {
         printf("This command is not a legal command!\n");
     }
 }
@@ -478,6 +483,11 @@ void addtohistory(Command *pcommand){
     commandHistory->size++;
     return;
 
+}
+
+void banana(){
+
+    puts(" _\n//\\\nV  \\\n \\  \\_\n  \\,\'.`-.\n   |\\ `. `.       \n   ( \\  `. `-.                        _,.-:\\\n    \\ \\   `.  `-._             __..--\' ,-\';/\n     \\ `.   `-.   `-..___..---\'   _.--\' ,\'/\n      `. `.    `-._        __..--\'    ,\' /\n        `. `-_     ``--..\'\'       _.-\' ,\'\n          `-_ `-.___        __,--\'   ,\'\n             `-.__  `----\"\"\"    __.-\'\n                  `--..____..--\'");
 }
 
 
