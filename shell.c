@@ -3,7 +3,6 @@ Dr. Hensel COP4600 Assignment 2
 Co-Authored by Robert DeRienzo and David Hranicky
 */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
