@@ -1,9 +1,8 @@
 /*
 TODO:
 
-make repeat
-pass parameters in for the start command
 handle relative paths in start
+fix indexes for replay
 
 */
 
